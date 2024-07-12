@@ -3,7 +3,7 @@ name = "awrite"
 description = "awrite!(): the async write!()/format!() scratch buffer"
 authors = ["Robert Jördens <rj@quartiq.de>"]
 license = "MIT OR Apache-2.0"
-version = "0.1.0"
+version = "0.2.0"
 repository = "https://github.com/quartiq/awrite"
 edition = "2021"
 
