@@ -86,22 +86,25 @@ impl<T, U: ErrorType> ErrorType for AwriteBuf<T, U> {
     type Error = Error<U::Error>;
 }
 
+// Sync Write behavior like &mut [u8]
 impl<T: AsMut<[u8]>, U: ErrorType> embedded_io::Write for AwriteBuf<T, U> {
     fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
         let mut sli = &mut self.buf.as_mut()[self.pos..];
-        let written = embedded_io::Write::write(&mut sli, buf).map_err(Error::Sync)?;
+        let written = sli.write(buf).map_err(Error::Sync)?;
         self.pos += written;
         Ok(written)
     }
 
     fn flush(&mut self) -> Result<(), Self::Error> {
-        panic!("Use embedded_io_async::Write::flush")
+        Ok(())
     }
 }
 
-impl<T: AsRef<[u8]>, U: embedded_io_async::Write> embedded_io_async::Write for AwriteBuf<T, U> {
-    async fn write(&mut self, _buf: &[u8]) -> Result<usize, Self::Error> {
-        panic!("Use embedded_io::Write::write")
+impl<T: AsRef<[u8]> + AsMut<[u8]>, U: embedded_io_async::Write> embedded_io_async::Write
+    for AwriteBuf<T, U>
+{
+    async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
+        embedded_io::Write::write(self, buf)
     }
 
     async fn flush(&mut self) -> Result<(), Self::Error> {
